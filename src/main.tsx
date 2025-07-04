@@ -1,21 +1,34 @@
 'use client'
 
 import React, { useState } from 'react';
-
+import ClipboardJS from 'clipboard';
 export default function LoadingIndicator() {
     // 初始化 text 状态
     const [text, setText] = useState<string>('');
     const [tips, setTips] = useState<string>('');
-    const link = 'http://127.0.0.1:3000/api/8fc7af490215e9d4304ac89bc667561c';
+    const [link, setLink] = useState<string>('');
 
-    const handleClick = async () => { 
-        if(text === ''){
+    const handleClick = async () => {
+        if (text === '') {
             setTips('请输入内容');
             return;
         }
         const data = await fetch('/api/home', { method: 'POST', body: text });
         const info = await data.json();
-        setTips(info);
+        setLink(info);
+        setTips('写入成功! 请复制链接');
+    };
+
+    const handleCopy = () => {
+        const clipboard = new ClipboardJS('.copy-btn', {
+            text: function () {
+                return link;
+            }
+        });
+        clipboard.on('success', function (event) {
+            event.clearSelection();
+            setTips('复制成功!');
+        });
     };
 
     return (
@@ -34,7 +47,7 @@ export default function LoadingIndicator() {
             <div className='w-full h-9 flex items-center justify-center mt-6'>
                 <span className='text-nowrap mr-3'>订阅链接: </span>
                 <input className='w-full h-full px-2 border rounded-md' value={link} readOnly />
-                <button className='w-28 px-4 py-2 bg-blue-500 text-white rounded-md ml-2 cursor-pointer hover:bg-blue-400 select-none'>复制</button>
+                <button className='copy-btn w-28 px-4 py-2 bg-blue-500 text-white rounded-md ml-2 cursor-pointer hover:bg-blue-400 select-none' onClick={handleCopy}> 复制</button>
             </div>
         </div>
     );
